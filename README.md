@@ -3,10 +3,10 @@
 > **The Sovereign AI Workforce.**
 > A local-first, dockerized autonomous agent framework built on LangGraph & Ollama.
 
-![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python)
-![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)
-![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-orange?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Phase_7:_Connected-success?style=for-the-badge)
+[![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python)](https://www.python.org/)
+[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
+[![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-orange?style=for-the-badge)](https://langchain-ai.github.io/langgraph/)
+[![Status](https://img.shields.io/badge/Status-Phase_7:_Connected-success?style=for-the-badge)](https://github.com/Bacoazul/Argos_Core)
 
 ---
 

@@ -6,6 +6,8 @@ anyio==4.12.1
     # via httpx
 beautifulsoup4==4.14.3
     # via argos-core (pyproject.toml)
+brotli==1.2.0
+    # via httpx
 certifi==2026.1.4
     # via
     #   httpcore
@@ -18,22 +20,31 @@ cffi==2.0.0
 charset-normalizer==3.4.4
     # via requests
 click==8.3.1
-    # via duckduckgo-search
+    # via ddgs
 colorama==0.4.6
     # via click
 cryptography==46.0.4
     # via pyjwt
-duckduckgo-search==8.1.1
+ddgs==9.10.0
     # via argos-core (pyproject.toml)
+fake-useragent==2.2.0
+    # via ddgs
 h11==0.16.0
     # via httpcore
+h2==4.3.0
+    # via httpx
+hpack==4.1.0
+    # via h2
 httpcore==1.0.9
     # via httpx
 httpx==0.28.1
     # via
+    #   ddgs
     #   langgraph-sdk
     #   langsmith
     #   ollama
+hyperframe==6.1.0
+    # via h2
 idna==3.11
     # via
     #   anyio
@@ -65,7 +76,7 @@ langgraph-sdk==0.3.4
 langsmith==0.6.9
     # via langchain-core
 lxml==6.0.2
-    # via duckduckgo-search
+    # via ddgs
 markdown-it-py==4.0.0
     # via rich
 mdurl==0.1.2
@@ -85,7 +96,7 @@ packaging==26.0
     #   langchain-core
     #   langsmith
 primp==0.15.0
-    # via duckduckgo-search
+    # via ddgs
 pycparser==3.0
     # via cffi
 pydantic==2.12.5
@@ -116,6 +127,8 @@ requests-toolbelt==1.0.0
     # via langsmith
 rich==14.3.2
     # via argos-core (pyproject.toml)
+socksio==1.0.0
+    # via httpx
 soupsieve==2.8.3
     # via beautifulsoup4
 tenacity==9.1.4

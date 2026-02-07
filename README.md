@@ -1,52 +1,42 @@
-﻿# 👁️ ARGOS CORE - Sovereign AI Agent
+﻿# 👁️ ARGOS CORE
 
-> "My primary constraint is zero reliance on cloud APIs—every solution must be fully local."
+> **The Sovereign AI Workforce.**
+> A local-first, dockerized autonomous agent framework built on LangGraph & Ollama.
 
-Argos is a local-first, autonomous AI agent engineered to run on consumer hardware (NVIDIA RTX 5090). It utilizes **LangGraph** for orchestration, **Ollama** for inference, and **Docker** for secure execution.
+![Python](https://img.shields.io/badge/Python-3.12-blue?style=for-the-badge&logo=python)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)
+![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-orange?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Phase_7:_Connected-success?style=for-the-badge)
+
+---
+
+## 📖 Overview
+
+**Argos Core** is an open-source initiative to build a truly autonomous "Operating System for AI Agents." Unlike cloud-dependent assistants, Argos runs entirely on your hardware, maintaining strict data sovereignty.
+
+Inspired by the "OpenClaw" philosophy, Argos is designed to live inside a secure **Docker container** while interacting with the outside world through controlled APIs and tools. It serves as a bridge between local LLMs (via Ollama) and real-world actions.
+
+### ⚡ Key Capabilities (Phase 7)
+
+* **🔒 Digital Faraday Cage:** Runs inside a secure Docker environment (`python:3.12-slim`). It cannot accidentally destroy your host OS, but can manipulate its own isolated filesystem.
+* **🧠 Neural Link (Local LLM):** Connects to the host machine's Ollama instance via internal Docker networking. No OpenAI API keys required.
+* **🌐 Autonomous Internet Access:** Equipped with `ddgs` (DuckDuckGo Search) to perform live web research without tracking or API costs. Handles strict timeout management and eager loading to prevent agent hangs.
+* **💾 Persistent Memory:** Utilizes Docker Volume binding to read/write to a local `workspace` folder on the host machine. Information survives container restarts.
+* **🛠️ Tool Use:** Capable of executing Python logic to interact with the filesystem and the web dynamically.
+
+---
 
 ## 🏗️ Architecture
 
-* **Brain:** Qwen2.5-Coder (via Ollama) running on Host GPU.
-* **Body:** Python 3.12 + LangGraph running in Docker Container.
-* **Memory:** Persistent state management via Checkpointers.
-* **Hands:** File System Access (Read/Write/List) inside sandbox.
+Argos abandons the traditional "infinite loop" script in favor of a **State Graph** architecture provided by **LangGraph**.
 
-## 🚀 Quick Start
-
-### Prerequisites
-* Windows 11 with NVIDIA GPU (RTX 3090/4090/5090 recommended).
-* [Docker Desktop](https://www.docker.com/) installed.
-* [Ollama](https://ollama.com/) running locally.
-
-### Installation
-
-1.  **Clone the repository:**
-    \\\ash
-    git clone https://github.com/YOUR_USERNAME/Argos_Core.git
-    cd argos_core
-    \\\
-
-2.  **Build the Containment Unit:**
-    \\\ash
-    docker build -t argos-core:v1 .
-    \\\
-
-3.  **Ignite the Agent:**
-    \\\ash
-    docker run -it --rm \
-      --name argos_instance \
-      --add-host=host.docker.internal:host-gateway \
-      -e OLLAMA_BASE_URL="http://host.docker.internal:11434" \
-      argos-core:v1
-    \\\
-
-## 🛡️ Security
-Argos runs inside a **non-root Docker container**. File system operations are restricted to the container's ephemeral storage unless volumes are explicitly mounted.
-
-## 🗺️ Roadmap
-- [x] Phase 1: Local Inference Setup
-- [x] Phase 2: Logic Core (Qwen3)
-- [x] Phase 3: Orchestration (LangGraph)
-- [x] Phase 4: Tools (File System)
-- [x] Phase 5: Docker Isolation
-- [ ] Phase 6: External Memory (RAG)
+```mermaid
+graph LR
+    A[User Input] --> B(Router)
+    B --> C{Decision}
+    C -- Needs Info --> D[Tools Node]
+    D -- Web Search / FS Ops --> E[External World]
+    E --> D
+    D --> F[Agent Node]
+    F --> C
+    C -- Final Answer --> G[Output]

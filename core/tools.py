@@ -1,15 +1,15 @@
 """
 Argos Core - Tools Module
-Phase 7: Internet & File System
+Phase 7: Internet Fix (Formatted & Eager Loading)
 """
 import os
 from langchain_core.tools import tool
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 
-# --- HERRAMIENTAS DE SISTEMA DE ARCHIVOS (Ya las tenías) ---
+# --- FILE SYSTEM TOOLS ---
 @tool
 def list_files(directory: str) -> str:
-    """Lists files in a directory. Use this to explore the file system."""
+    """Lists files in a directory."""
     try:
         files = os.listdir(directory)
         return f"Files in '{directory}': {files}"
@@ -18,7 +18,7 @@ def list_files(directory: str) -> str:
 
 @tool
 def read_file(file_path: str) -> str:
-    """Reads the content of a file."""
+    """Reads a file."""
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             return f.read()
@@ -27,9 +27,8 @@ def read_file(file_path: str) -> str:
 
 @tool
 def write_file(file_path: str, content: str) -> str:
-    """Writes content to a file. OVERWRITES existing content."""
+    """Writes to a file."""
     try:
-        # Asegurar que el directorio existe
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(content)
@@ -37,20 +36,33 @@ def write_file(file_path: str, content: str) -> str:
     except Exception as e:
         return f"Error writing file: {e}"
 
-# --- NUEVA HERRAMIENTA: INTERNET (SENTIDOS) ---
+# --- INTERNET TOOL (MEJORADA) ---
 @tool
 def web_search(query: str) -> str:
     """
     Searches the internet using DuckDuckGo.
-    Use this to find documentation, libraries, or real-world facts.
+    Returns a formatted summary of the top 3 results.
     """
+    print(f"\n[DEBUG] Searching web for: {query}...")
     try:
-        results = DDGS().text(query, max_results=3)
-        if not results:
+        # 1. Eager Loading (Evita el Hang)
+        raw_results = list(DDGS().text(query, max_results=3))
+        
+        if not raw_results:
             return "No results found."
-        return str(results)
+
+        # 2. Parsing (Mejora la legibilidad para el Agente)
+        formatted_results = []
+        for r in raw_results:
+            title = r.get('title', 'No Title')
+            link = r.get('href', 'No Link')
+            body = r.get('body', 'No Content')
+            entry = f"Title: {title}\nLink: {link}\nSnippet: {body}"
+            formatted_results.append(entry)
+
+        return "\n---\n".join(formatted_results)
+
     except Exception as e:
         return f"Internet search failed: {e}"
 
-# Lista maestra de herramientas
 ARGOS_TOOLS = [list_files, read_file, write_file, web_search]

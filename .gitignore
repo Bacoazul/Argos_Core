@@ -12,3 +12,4 @@ hola_argos.txt
 prueba.txt
 .vscode/
 "@ | Out-File -Encoding utf8 .gitignore
+workspace/

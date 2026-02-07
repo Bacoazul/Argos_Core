@@ -1,7 +1,14 @@
+# Primero, asegúrate de haber salido de Docker (escribe 'exit' si sigues en USER >)
+# Luego ejecuta esto:
+
+@"
 __pycache__/
-*.py[cod]
-.venv/
+*.pyc
 .env
+.venv/
+uv.lock
 *.log
+hola_argos.txt
+prueba.txt
 .vscode/
-.idea/
+"@ | Out-File -Encoding utf8 .gitignore

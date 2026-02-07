@@ -28,6 +28,21 @@ Inspired by the "OpenClaw" philosophy, Argos is designed to live inside a secure
 
 ## 🏗️ Architecture
 
+## 📂 Estructura del Proyecto
+
+```text
+Argos_Core
+├── 🐳 Dockerfile        # Configuración del contenedor
+├── 📦 pyproject.toml    # Dependencias (uv)
+├── 📄 README.md         # Documentación
+├── 📂 core              # Cerebro del Agente
+│   ├── agent.py         # Lógica LangGraph
+│   ├── main.py          # Arranque
+│   └── tools.py         # Herramientas (Web/Archivos)
+└── 📂 workspace         # Memoria (Volumen persistente)
+    └── memoria.txt      # Archivos del usuario
+```
+
 Argos abandons the traditional "infinite loop" script in favor of a **State Graph** architecture provided by **LangGraph**.
 
 ```mermaid

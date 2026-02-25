@@ -25,12 +25,15 @@ class ArgosAgent:
         logger.info("Initializing Argos Agent (Docker-Ready)...")
         
         # --- DOCKER NETWORK CONFIGURATION ---
+
         ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        logger.info(f"Connecting to Brain at: {ollama_url}")
+        ollama_model = os.getenv("OLLAMA_MODEL", "qwen3-coder-next:latest") # <-- FIX DINÁMICO
+        
+        logger.info(f"Connecting to Brain at: {ollama_url} using model: {ollama_model}")
 
         # Configurar LLM con Tools
         llm = ChatOllama(
-            model="qwen3-coder-next:latest",
+            model=ollama_model, # <-- AHORA LEE LA VARIABLE
             base_url=ollama_url,
             temperature=0.1,
             num_ctx=32768,         

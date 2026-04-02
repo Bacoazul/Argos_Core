@@ -3,11 +3,13 @@ Argos Core - Agent Module (LangGraph Architecture)
 Phase 5: Docker Ready + Robust State Handling
 """
 import os
+import sqlite3
+from pathlib import Path
 from typing import Annotated, TypedDict, List
 from langgraph.graph import StateGraph, END, START
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
-from langgraph.checkpoint.memory import MemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage, BaseMessage
 
@@ -42,7 +44,14 @@ class ArgosAgent:
         
         # Bind tools
         self.llm_with_tools = llm.bind_tools(ARGOS_TOOLS)
-        self.memory = MemorySaver()
+
+        # Memoria persistente — SqliteSaver en vez de MemorySaver
+        db_path = Path(os.getenv("CHECKPOINT_DB", "/data/argos/checkpoints.db"))
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        conn = sqlite3.connect(str(db_path), check_same_thread=False)
+        self.memory = SqliteSaver(conn)
+        logger.info(f"Checkpoint DB: {db_path}")
+
         self.app = self._build_brain()
 
     def _call_model(self, state: AgentState):

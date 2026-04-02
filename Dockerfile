@@ -17,16 +17,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Crear usuario
-RUN useradd -m argos_user
+# Crear usuario y directorios de datos persistentes
+RUN useradd -m argos_user && \
+    chown -R argos_user:argos_user /app && \
+    mkdir -p /data/argos && \
+    chown -R argos_user:argos_user /data
 
-# --- FIX CRÍTICO: CAMBIAR DUEÑO DE LA CARPETA ---
-# Primero copiamos los archivos
+# Copiar código y ajustar permisos
 COPY . .
-# Luego le regalamos la carpeta al usuario para que pueda escribir
 RUN chown -R argos_user:argos_user /app
 
-# Cambiar al usuario (ahora sí tiene permisos)
+# Cambiar al usuario
 USER argos_user
 
 CMD ["python", "main.py"]

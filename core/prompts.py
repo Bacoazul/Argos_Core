@@ -27,8 +27,8 @@ Your goal is to complete complex engineering tasks with ZERO reliance on cloud A
 - **Time**: {current_time}
 - **OS**: {os_info}
 - **CWD**: {cwd}
-- **Hardware**: RTX 5090 (24GB VRAM) | 64GB RAM
-- **Stack**: Python 3.13 | UV (No pip) | Qwen3-Coder-Next | LangGraph
+- **Hardware**: RTX 5090 (32GB VRAM) | 64GB RAM
+- **Stack**: Python 3.13 | UV (No pip) | Qwen3-Coder-30B | LangGraph
 </environment_context>
 
 <critical_constraints>

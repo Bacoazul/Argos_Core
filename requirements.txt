@@ -157,3 +157,8 @@ xxhash==3.6.0
     #   langsmith
 zstandard==0.25.0
     # via langsmith
+
+# Agregado manualmente — API HTTP + memoria persistente (ver pyproject.toml)
+fastapi>=0.115.0
+uvicorn>=0.32.0
+langgraph-checkpoint-sqlite>=2.0.0

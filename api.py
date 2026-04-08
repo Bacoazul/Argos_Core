@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from core.agent import ArgosAgent
 from utils.logger_config import get_argos_logger
@@ -20,9 +21,12 @@ _agent: ArgosAgent | None = None
 async def lifespan(app: FastAPI):
     global _agent
     logger.info("Starting Argos API — initializing agent...")
-    _agent = ArgosAgent()
-    logger.info("Agent ready.")
-    yield
+    db_path = ArgosAgent.db_path()
+    logger.info(f"Checkpoint DB: {db_path}")
+    async with AsyncSqliteSaver.from_conn_string(str(db_path)) as memory:
+        _agent = ArgosAgent(memory)
+        logger.info("Agent ready.")
+        yield
     _agent = None
 
 
@@ -37,17 +41,18 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     response: str
     thread_id: str
+    model: str | None = None  # qué modelo respondió (para debug/UI)
 
 
 @app.post("/chat", response_model=ChatResponse)
-def chat(request: ChatRequest) -> ChatResponse:
+async def chat(request: ChatRequest) -> ChatResponse:
     thread_id = request.thread_id or str(uuid.uuid4())
     try:
-        response = _agent.run(request.message, thread_id=thread_id)  # type: ignore[union-attr]
+        response, model_used = await _agent.run(request.message, thread_id=thread_id)  # type: ignore[union-attr]
     except Exception as e:
         logger.error(f"Agent error on thread {thread_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-    return ChatResponse(response=response, thread_id=thread_id)
+    return ChatResponse(response=response, thread_id=thread_id, model=model_used)
 
 
 @app.get("/health")

@@ -45,6 +45,11 @@ _AGENT_KEYWORDS = (
     # Matemáticas (1.7B falla en aritmética, mejor el modelo pesado)
     "cuanto es ", "calcula ", "cuánto es ", "resultado de ",
     "multiplica", "divide", "suma ", "resta ",
+    # Terminal / comandos
+    "ejecuta", "corre el comando", "run ", "terminal", "bash", "shell",
+    "git log", "git status", "git diff", "grep ", "find ",
+    "pytest", "python ", "pip ", "uv ",
+    "correr", "ejecutar", "comando",
 )
 
 

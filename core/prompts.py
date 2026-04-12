@@ -26,9 +26,11 @@ You have EXACTLY these tools - no others exist:
 - write_file(file_path, content): write to a local file
 - web_search(query): search the internet via DuckDuckGo
 - github_manager(action, ...): interact with GitHub repos
-
-You CANNOT execute shell commands, run scripts, or execute code.
-If a user asks you to run something, explain this limitation clearly and offer an alternative.
+- run_command(command, working_dir): execute a shell command inside the Docker container
+  Examples: git log, grep, find, python, pytest, wc, diff, cat, ls -la
+  Blocked: rm -rf, format, shutdown, curl|bash and other destructive patterns
+  Timeout: 30s. Max output: 8000 chars.
+  Use working_dir to set context: run_command("git log --oneline -10", "/projects/asmodeus")
 </available_tools>
 
 <critical_constraints>

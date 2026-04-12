@@ -3,6 +3,8 @@ Argos Core - Tools Module
 Phase 8: GitHub Integration (Audited, Secure & Type-Safe)
 """
 import os
+import re
+import subprocess
 import functools
 from typing import Optional, Literal
 from langchain_core.tools import tool
@@ -149,5 +151,77 @@ def github_manager(
     except Exception as e:
         return f"GITHUB_TOOL_ERROR: Error interno: {type(e).__name__}"
 
+# --- TERMINAL TOOL ---
+
+# Patrones bloqueados — comandos destructivos o peligrosos dentro del contenedor
+_BLOCKED_PATTERNS = re.compile(
+    r"rm\s+-[a-z]*r[a-z]*f|"          # rm -rf / rm -fr
+    r"rm\s+-[a-z]*f[a-z]*r|"
+    r">\s*/dev/|"                       # redirigir a dispositivos
+    r"dd\s+if=|"                        # operaciones de disco raw
+    r"mkfs|format\s+[a-z]:|"           # formatear disco
+    r"shutdown|reboot|halt|poweroff|"  # control del sistema
+    r"fork\s*bomb|:\(\)\{|"            # fork bomb
+    r"chmod\s+[0-7]*7[0-7][0-7]|"     # permisos peligrosos
+    r"curl\s+.*\|\s*(ba)?sh|"         # curl | bash
+    r"wget\s+.*\|\s*(ba)?sh|"         # wget | bash
+    r"python[23]?\s+-c\s+.*exec|"     # exec() remoto
+    r"eval\s*\(",                       # eval peligroso
+    re.IGNORECASE,
+)
+
+_MAX_OUTPUT_CHARS = 8000
+_CMD_TIMEOUT = 30  # segundos
+
+
+@tool
+def run_command(command: str, working_dir: str = "/") -> str:
+    """
+    Ejecuta un comando de shell dentro del contenedor Docker de Argos Core.
+    Entorno: Linux (Debian/Ubuntu), acceso de solo lectura a /projects/*.
+    Timeout: 30 segundos. Output máximo: 8000 caracteres.
+    Usa esto para: git log, grep, find, python, pytest, cat, ls, wc, diff, etc.
+    """
+    # Validar que el working_dir existe
+    if not os.path.isdir(working_dir):
+        return f"Error: el directorio '{working_dir}' no existe."
+
+    # Bloquear patrones peligrosos
+    if _BLOCKED_PATTERNS.search(command):
+        return "Comando bloqueado por seguridad. Usa comandos de lectura/análisis."
+
+    try:
+        result = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=_CMD_TIMEOUT,
+            cwd=working_dir,
+            env={**os.environ, "TERM": "dumb"},
+        )
+        stdout = result.stdout.strip()
+        stderr = result.stderr.strip()
+
+        output = stdout
+        if stderr and result.returncode != 0:
+            output = f"{stdout}\n[stderr]: {stderr}".strip()
+        elif stderr:
+            output = f"{stdout}\n[stderr (warning)]: {stderr}".strip()
+
+        if not output:
+            return f"Comando ejecutado (exit {result.returncode}), sin output."
+
+        if len(output) > _MAX_OUTPUT_CHARS:
+            output = output[:_MAX_OUTPUT_CHARS] + f"\n[... output truncado a {_MAX_OUTPUT_CHARS} chars]"
+
+        return f"[exit {result.returncode}]\n{output}"
+
+    except subprocess.TimeoutExpired:
+        return f"Timeout: el comando excedio {_CMD_TIMEOUT}s y fue terminado."
+    except Exception as e:
+        return f"Error ejecutando comando: {type(e).__name__}: {e}"
+
+
 # --- LISTA MAESTRA DE HERRAMIENTAS ---
-ARGOS_TOOLS = [list_files, read_file, write_file, web_search, github_manager]
+ARGOS_TOOLS = [list_files, read_file, write_file, web_search, github_manager, run_command]

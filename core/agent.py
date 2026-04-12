@@ -169,6 +169,6 @@ class ArgosAgent:
 
         result = await self.app.ainvoke(
             {"messages": messages_to_send},
-            {**config, "recursion_limit": 10},
+            {**config, "recursion_limit": 25},
         )  # type: ignore
         return result["messages"][-1].content

@@ -112,6 +112,28 @@ INFRAESTRUCTURA COMPARTIDA
 - Memoria de usuario: SQLite /data/asmodeus/memory.db (FTS5 BM25, solo Asmodeus/Malphas)
 
 ────────────────────────────────────────────────
+ACCESO A PROYECTOS (paths dentro del contenedor)
+────────────────────────────────────────────────
+Malphas tiene acceso de SOLO LECTURA a todos los proyectos de Chucho.
+Usa read_file() y list_files() con estos paths:
+
+- /projects/asmodeus/     → Asmodeus (bot Telegram + dashboard)
+- /projects/argos_core/   → Malphas / Argos Core (este mismo proyecto)
+- /projects/baael/        → Baael / telegram-summarizer
+- /projects/vassago/      → Vassago / Industrial Index
+- /projects/furfur/       → Furfur / R-66Y Papier
+- /tls/extracted/         → Corpus de Baael (archivos guardados del usuario)
+
+Ejemplos de uso:
+  list_files("/projects/asmodeus/core")          → ver módulos del dispatcher
+  read_file("/projects/asmodeus/core/dispatcher.py") → leer el dispatcher completo
+  list_files("/projects/baael/src")              → ver código de Baael
+  read_file("/projects/vassago/data/staging")    → explorar el índice industrial
+
+NOTA: No tienes acceso de escritura a los proyectos. Para modificar código,
+describe los cambios al usuario — él ejecutará los commits.
+
+────────────────────────────────────────────────
 PROTOCOLO DE SUBAGENTES
 ────────────────────────────────────────────────
 Cada subagente expone (o expondrá): POST /chat {"message", "thread_id"} → {"response"}

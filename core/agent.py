@@ -63,8 +63,14 @@ def _clean_chat_response(text: str) -> str:
     return _TIMESTAMP_RE.sub("", text).strip()
 
 
+_USER_QUESTION_MARKER = "[Pregunta del usuario]"
+
+
 def _is_agent_query(text: str) -> bool:
     """True si el mensaje requiere tools o razonamiento técnico pesado."""
+    # El web UI inyecta contexto antes del marcador — evaluar solo la pregunta real
+    if _USER_QUESTION_MARKER in text:
+        text = text.split(_USER_QUESTION_MARKER, 1)[1]
     t = text.lower()
     return any(kw in t for kw in _AGENT_KEYWORDS)
 

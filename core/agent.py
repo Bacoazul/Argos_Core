@@ -99,8 +99,9 @@ class ArgosAgent:
             model=chat_model,
             base_url=ollama_url,
             temperature=0.3,
-            num_ctx=4096,
+            num_ctx=8192,
             keep_alive=-1,
+            think=False,
         )
 
         # ── Agent path: pesado, con tools ───────────────────────────────────

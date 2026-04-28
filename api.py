@@ -6,6 +6,7 @@ import os
 import uuid
 from contextlib import asynccontextmanager
 
+import httpx
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
@@ -17,6 +18,21 @@ logger = get_argos_logger()
 _agent: ArgosAgent | None = None
 
 
+async def _warmup_chat_model() -> None:
+    chat_model = os.getenv("OLLAMA_CHAT_MODEL", "qwen3:1.7b")
+    ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as c:
+            await c.post(
+                f"{ollama_url}/api/generate",
+                json={"model": chat_model, "prompt": "hi", "stream": False,
+                      "options": {"num_predict": 1}, "keep_alive": -1},
+            )
+        logger.info(f"Chat model warmed up: {chat_model}")
+    except Exception as e:
+        logger.warning(f"Warmup failed (non-fatal): {e}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global _agent
@@ -26,6 +42,7 @@ async def lifespan(app: FastAPI):
     async with AsyncSqliteSaver.from_conn_string(str(db_path)) as memory:
         _agent = ArgosAgent(memory)
         logger.info("Agent ready.")
+        await _warmup_chat_model()
         yield
     _agent = None
 

@@ -11,6 +11,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import Annotated, TypedDict, List
+
+import httpx
 from langgraph.graph import StateGraph, END, START
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -153,13 +155,26 @@ class ArgosAgent:
             return response, os.getenv("OLLAMA_CHAT_MODEL", "qwen3:1.7b")
 
     async def _run_chat(self, stamped_input: str) -> str:
-        """Path rápido: qwen3:1.7b sin tools, sin LangGraph overhead."""
-        messages: list[BaseMessage] = [
-            SystemMessage(content=get_chat_prompt()),
-            HumanMessage(content=stamped_input),
-        ]
-        result = await self.llm_chat.ainvoke(messages)
-        return _clean_chat_response(result.content)
+        """Path rápido: httpx directo a Ollama con think=False para evitar reasoning loops."""
+        ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+        chat_model = os.getenv("OLLAMA_CHAT_MODEL", "qwen3.5:0.8b")
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            r = await client.post(
+                f"{ollama_url}/api/chat",
+                json={
+                    "model": chat_model,
+                    "messages": [
+                        {"role": "system", "content": get_chat_prompt()},
+                        {"role": "user", "content": stamped_input},
+                    ],
+                    "stream": False,
+                    "think": False,
+                    "keep_alive": -1,
+                    "options": {"num_ctx": 8192, "temperature": 0.3},
+                },
+            )
+            r.raise_for_status()
+        return _clean_chat_response(r.json()["message"]["content"])
 
     async def _run_agent(self, stamped_input: str, thread_id: str) -> str:
         """Path completo: qwen3-coder con tools y memoria persistente."""

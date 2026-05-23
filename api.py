@@ -21,18 +21,25 @@ _agent: ArgosAgent | None = None
 
 
 async def _warmup_knowledge() -> None:
-    from core.knowledge import is_stale, rebuild
-    if not is_stale():
-        logger.info("Knowledge index up to date — skipping rebuild.")
-        return
-    logger.info("Building knowledge index in background...")
+    from core.knowledge import is_stale, rebuild, _embed_single
     loop = asyncio.get_event_loop()
+    if is_stale():
+        logger.info("Building knowledge index in background...")
+        try:
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                count = await loop.run_in_executor(pool, rebuild)
+            logger.info(f"Knowledge index ready: {count} chunks.")
+        except Exception as e:
+            logger.warning(f"Knowledge warmup failed (non-fatal): {e}")
+            return
+    else:
+        logger.info("Knowledge index up to date.")
+    # Pre-warm nomic-embed-text (primer llamado carga el modelo en GPU ~20s)
     try:
-        with ThreadPoolExecutor(max_workers=1) as pool:
-            count = await loop.run_in_executor(pool, rebuild)
-        logger.info(f"Knowledge index ready: {count} chunks.")
+        await loop.run_in_executor(None, lambda: _embed_single("warmup"))
+        logger.info("nomic-embed-text warmed up.")
     except Exception as e:
-        logger.warning(f"Knowledge warmup failed (non-fatal): {e}")
+        logger.warning(f"Embed warmup failed (non-fatal): {e}")
 
 
 async def _warmup_chat_model() -> None:

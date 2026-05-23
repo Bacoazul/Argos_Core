@@ -91,6 +91,15 @@ async def chat(request: ChatRequest) -> ChatResponse:
     return ChatResponse(response=response, thread_id=thread_id, model=model_used)
 
 
+@app.get("/knowledge/query")
+async def knowledge_query(q: str, n: int = 6) -> dict:
+    """Semantic search sobre proyectos de Chucho. Usado por el dispatcher."""
+    from core.knowledge import query as kb_query
+    loop = asyncio.get_event_loop()
+    context = await loop.run_in_executor(None, lambda: kb_query(q, n))
+    return {"context": context}
+
+
 @app.get("/health")
 def health() -> dict:
     return {

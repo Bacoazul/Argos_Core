@@ -23,8 +23,8 @@ _OLLAMA = os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
 _EMBED_MODEL = "nomic-embed-text:latest"
 _CHUNK_SIZE = 900
 _OVERLAP = 150
-_TOP_K = 5
-_MIN_SCORE = 0.25
+_TOP_K = 8
+_MIN_SCORE = 0.18
 _BATCH_SIZE = 48  # chunks por llamada a Ollama embed
 
 _REBUILD_LOCK = threading.Lock()

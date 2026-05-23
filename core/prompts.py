@@ -21,6 +21,9 @@ Your goal is to complete complex engineering tasks with ZERO reliance on cloud A
     + """
 <available_tools>
 You have EXACTLY these tools - no others exist:
+- query_projects(question): semantic search over all project docs (CLAUDE.md, HANDOFF.md, Project Map).
+  Use this FIRST when asked about the ecosystem, a project's state, bugs, capabilities, or who does what.
+  Examples: query_projects("qué bugs tiene CircleVision"), query_projects("cómo funciona el dispatcher")
 - list_files(directory): list files in a local directory
 - read_file(file_path): read a local file
 - write_file(file_path, content): write to a local file

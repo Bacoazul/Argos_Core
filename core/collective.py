@@ -115,20 +115,25 @@ INFRAESTRUCTURA COMPARTIDA
 ACCESO A PROYECTOS (paths dentro del contenedor)
 ────────────────────────────────────────────────
 Malphas tiene acceso de SOLO LECTURA a todos los proyectos de Chucho.
-Usa read_file() y list_files() con estos paths:
+USA SIEMPRE query_projects() primero para preguntas sobre el ecosistema —
+es más rápido que leer archivos individuales.
 
-- /projects/asmodeus/     → Asmodeus (bot Telegram + dashboard)
-- /projects/argos_core/   → Malphas / Argos Core (este mismo proyecto)
-- /projects/baael/        → Baael / telegram-summarizer
-- /projects/vassago/      → Vassago / Industrial Index
-- /projects/furfur/       → Furfur / R-66Y Papier
-- /tls/extracted/         → Corpus de Baael (archivos guardados del usuario)
+Paths disponibles:
+- /projects/asmodeus/       → Asmodeus (bot Telegram + dashboard)
+- /projects/argos_core/     → Malphas / Argos Core (este mismo proyecto)
+- /projects/baael/          → Baael / telegram-summarizer
+- /projects/vassago/        → Vassago / Industrial Index
+- /projects/furfur/         → Furfur / R-66Y Papier
+- /projects/circlevision/   → CircleVision (Circle Search local, overlay + lasso)
+- /projects/asmodeus_app/   → Asmodeus_App (app Flutter móvil para Pixel 9 Pro)
+- /knowledge/project_map/   → Wiki de proyectos (Project Map — fuente actualizada por session-close)
+- /tls/extracted/           → Corpus de Baael (archivos guardados del usuario)
 
 Ejemplos de uso:
-  list_files("/projects/asmodeus/core")          → ver módulos del dispatcher
-  read_file("/projects/asmodeus/core/dispatcher.py") → leer el dispatcher completo
-  list_files("/projects/baael/src")              → ver código de Baael
-  read_file("/projects/vassago/data/staging")    → explorar el índice industrial
+  query_projects("estado actual de CircleVision")
+  query_projects("qué bugs tiene Argos")
+  list_files("/projects/asmodeus/core")
+  read_file("/projects/asmodeus/core/dispatcher.py")
 
 NOTA: No tienes acceso de escritura a los proyectos. Para modificar código,
 describe los cambios al usuario — él ejecutará los commits.

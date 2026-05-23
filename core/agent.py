@@ -52,6 +52,20 @@ _AGENT_KEYWORDS = (
     "git log", "git status", "git diff", "grep ", "find ",
     "pytest", "python ", "pip ", "uv ",
     "correr", "ejecutar", "comando",
+    # Ecosistema / proyectos de Chucho
+    "mi proyecto", "mis proyectos", "ecosistema", "el ecosistema",
+    "quién es", "quien es", "quién hace", "quien hace",
+    "qué hace", "que hace", "qué puede", "que puede",
+    "encargado", "responsable", "subagente",
+    "estado actual", "actualmente", "pendiente", "fase",
+    "bug", "falla", "error actual",
+    "circlevision", "asmodeus_app", "asmodeus app",
+    "vigilanc", "amon", "baael", "vassago", "furfur", "malphas",
+    "industrial index", "r-66", "papier",
+    "telegram-sum", "telegram summ",
+    "cómo funciona", "como funciona",
+    "qué es el ecosistema", "háblame de", "hablame de",
+    "cuéntame sobre", "cuentame sobre",
 )
 
 

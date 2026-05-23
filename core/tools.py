@@ -223,5 +223,21 @@ def run_command(command: str, working_dir: str = "/") -> str:
         return f"Error ejecutando comando: {type(e).__name__}: {e}"
 
 
+# --- KNOWLEDGE TOOL ---
+
+@tool
+def query_projects(question: str) -> str:
+    """
+    Busca información actualizada sobre los proyectos de Chucho en el ecosistema Asmodeus.
+    Usa esto para preguntas sobre: arquitectura, estado actual, bugs, capacidades, relaciones
+    entre proyectos, quién hace qué, fases completadas o pendientes.
+    Proyectos cubiertos: Asmodeus, Argos Core (Malphas), Baael (telegram-summarizer),
+    Vassago (Industrial Index), Amon (VigilancAI), Furfur (R-66Y Papier),
+    CircleVision, Asmodeus_App.
+    """
+    from core.knowledge import query
+    return query(question)
+
+
 # --- LISTA MAESTRA DE HERRAMIENTAS ---
-ARGOS_TOOLS = [list_files, read_file, write_file, web_search, github_manager, run_command]
+ARGOS_TOOLS = [list_files, read_file, write_file, web_search, github_manager, run_command, query_projects]

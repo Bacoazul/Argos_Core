@@ -2,8 +2,10 @@
 Argos Core - FastAPI wrapper
 Exposes ArgosAgent as HTTP API without modifying agent.py
 """
+import asyncio
 import os
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 
 import httpx
@@ -16,6 +18,21 @@ from utils.logger_config import get_argos_logger
 
 logger = get_argos_logger()
 _agent: ArgosAgent | None = None
+
+
+async def _warmup_knowledge() -> None:
+    from core.knowledge import is_stale, rebuild
+    if not is_stale():
+        logger.info("Knowledge index up to date — skipping rebuild.")
+        return
+    logger.info("Building knowledge index in background...")
+    loop = asyncio.get_event_loop()
+    try:
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            count = await loop.run_in_executor(pool, rebuild)
+        logger.info(f"Knowledge index ready: {count} chunks.")
+    except Exception as e:
+        logger.warning(f"Knowledge warmup failed (non-fatal): {e}")
 
 
 async def _warmup_chat_model() -> None:
@@ -43,6 +60,8 @@ async def lifespan(app: FastAPI):
         _agent = ArgosAgent(memory)
         logger.info("Agent ready.")
         await _warmup_chat_model()
+        # Pre-warm knowledge index en background — no bloquea el startup
+        asyncio.create_task(_warmup_knowledge())
         yield
     _agent = None
 

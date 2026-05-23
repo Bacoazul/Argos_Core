@@ -59,13 +59,15 @@ _AGENT_KEYWORDS = (
     "encargado", "responsable", "subagente",
     "estado actual", "actualmente", "pendiente", "fase",
     "bug", "falla", "error actual",
-    "circlevision", "asmodeus_app", "asmodeus app",
+    "circlevision", "asmodeus_app", "asmodeus app", "app móvil", "app movil",
+    "pixel 9", "la app", "el app",
     "vigilanc", "amon", "baael", "vassago", "furfur", "malphas",
     "industrial index", "r-66", "papier",
     "telegram-sum", "telegram summ",
     "cómo funciona", "como funciona",
     "qué es el ecosistema", "háblame de", "hablame de",
     "cuéntame sobre", "cuentame sobre",
+    "project map", "handoff", "sessions",
 )
 
 

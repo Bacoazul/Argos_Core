@@ -39,7 +39,7 @@ _SOURCE_ROOTS: list[tuple[Path, list[str]]] = [
 
 def _embed_batch(texts: list[str]) -> list[list[float]]:
     import urllib.request
-    payload = json.dumps({"model": _EMBED_MODEL, "input": texts}).encode()
+    payload = json.dumps({"model": _EMBED_MODEL, "input": texts, "keep_alive": -1}).encode()
     req = urllib.request.Request(
         f"{_OLLAMA}/api/embed",
         data=payload,

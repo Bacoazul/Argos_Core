@@ -69,6 +69,12 @@ _AGENT_KEYWORDS = (
     "qué es el ecosistema", "háblame de", "hablame de",
     "cuéntame sobre", "cuentame sobre",
     "project map", "handoff", "sessions",
+    # Manos del ecosistema (Plan Jarvis) — acciones que requieren tools
+    "luz", "luces", "enciende", "apaga", "prende", "brillo", "escena",
+    "cámara", "camara", "foto", "snapshot", "captura", "vigilancia",
+    "analiza la imagen", "analiza esta imagen", "describe la imagen",
+    "genera una imagen", "genera imagen", "dibuja", "crea una imagen",
+    "qué hora", "que hora", "fecha de hoy",
 )
 
 

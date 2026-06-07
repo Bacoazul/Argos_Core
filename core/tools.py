@@ -233,11 +233,17 @@ def query_projects(question: str) -> str:
     entre proyectos, quién hace qué, fases completadas o pendientes.
     Proyectos cubiertos: Asmodeus, Argos Core (Malphas), Baael (telegram-summarizer),
     Vassago (Industrial Index), Amon (VigilancAI), Furfur (R-66Y Papier),
-    CircleVision, Asmodeus_App.
+    Orobas, Asmodeus_App.
     """
     from core.knowledge import query
     return query(question)
 
 
 # --- LISTA MAESTRA DE HERRAMIENTAS ---
-ARGOS_TOOLS = [list_files, read_file, write_file, web_search, github_manager, run_command, query_projects]
+# Tools internas históricas + las 7 "manos" MCP heredadas (Plan Jarvis, Fase A).
+# El adaptador se importa abajo para evitar circular: mcp_* importa mcp_server, no tools.
+_BASE_TOOLS = [list_files, read_file, write_file, web_search, github_manager, run_command, query_projects]
+
+from core.mcp_langchain_adapter import MCP_AS_LANGCHAIN  # noqa: E402
+
+ARGOS_TOOLS = _BASE_TOOLS + MCP_AS_LANGCHAIN

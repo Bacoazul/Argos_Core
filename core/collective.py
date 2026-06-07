@@ -124,13 +124,13 @@ Paths disponibles:
 - /projects/baael/          → Baael / telegram-summarizer
 - /projects/vassago/        → Vassago / Industrial Index
 - /projects/furfur/         → Furfur / R-66Y Papier
-- /projects/circlevision/   → CircleVision (Circle Search local, overlay + lasso)
+- /projects/orobas/         → Orobas (Circle Search local, clipboard polling + gemma4:26b)
 - /projects/asmodeus_app/   → Asmodeus_App (app Flutter móvil para Pixel 9 Pro)
 - /knowledge/project_map/   → Wiki de proyectos (Project Map — fuente actualizada por session-close)
 - /tls/extracted/           → Corpus de Baael (archivos guardados del usuario)
 
 Ejemplos de uso:
-  query_projects("estado actual de CircleVision")
+  query_projects("estado actual de Orobas")
   query_projects("qué bugs tiene Argos")
   list_files("/projects/asmodeus/core")
   read_file("/projects/asmodeus/core/dispatcher.py")

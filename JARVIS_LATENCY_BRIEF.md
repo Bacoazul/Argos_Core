@@ -85,7 +85,13 @@ llama-server.exe -m models\Qwen3.6-35B-A3B-UD-Q4_K_M.gguf -ngl 99 -c 8192 \
 - **Test end-to-end real:** ArgosAgent (backend openai) → llama-server → frigate_cam → tabla markdown, **2.2s**.
 - Rollback: poner `agent_backend:"ollama"` en model_config.json + recrear contenedor.
 
-### 🔴 PENDIENTE — convivencia VRAM (próximo)
-llama-server persistente acapara 24.5GB → si una query AGENT llama `decarabia_analyze` (gemma4:26b, ~16GB) **no cabe** (24.5+16>32) y la visión fallará/irá a CPU. Falta orquestación **on-demand** (parar llama-server antes de visión / patrón go2rtc vía Windows Bridge). Además: **llama-server debe estar arriba** para el path AGENT — falta auto-start (Startup/Scheduled Task).
+### ✅ Auto-start RESUELTO (2026-06-07)
+llama-server se mantiene vivo SIN admin (Scheduled Task daba Access Denied):
+- **Supervisor** `C:\tools\llamacpp\jarvis-supervisor.ps1` — loop que arranca llama-server y lo reinicia si crashea (logs: `jarvis-supervisor.log`, `jarvis-stdout/stderr.log`). **Solo ASCII** (PS5.1 rompe con acentos/em-dash en UTF-8 sin BOM).
+- **Autostart al login:** `...\Startup\startup-jarvis.vbs` lanza el supervisor oculto en cada inicio de sesión.
+- Verificado: query AGENT producción vía `:8000` con get_datetime+frigate_cam en 2.2s.
+
+### 🔴 PENDIENTE — convivencia VRAM (único abierto)
+llama-server persistente acapara 24.5GB → si una query AGENT llama `decarabia_analyze` (gemma4:26b, ~16GB) **no cabe** (24.5+16>32) y la visión fallará/irá a CPU. Falta orquestación **on-demand** (parar llama-server antes de visión / patrón go2rtc vía Windows Bridge).
 
 *Contexto: Plan Jarvis Fase A (agente LangGraph con 14 tools) ya desplegado; la latencia del modelo agente era el único cuello — ahora resuelta a nivel de runtime, falta integrar.*

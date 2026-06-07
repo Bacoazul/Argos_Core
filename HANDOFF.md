@@ -14,9 +14,13 @@ externos (Claude Desktop, ollmcp+Qwen, Flutter). Capa separada de `ARGOS_TOOLS`.
 - `agent.py` + `api.py` ahora leen modelo desde `model_config.json` (fallback env)
 - deps: `fastmcp` (3.4.2), `duckdb` (1.5.3)
 - compose argos-core: `ports: 8000:8000`; Frigate creds en `.env`
-- **Testeado in-memory + HTTP:** 7 tools listadas, get_datetime/vassago/project_map OK, resto error-graceful sin backend vivo
-- **Pendiente validar con backends vivos:** amon_lights, decarabia_analyze, anima_generate, frigate_cam
+- **Desplegado y verificado en producción** (`:8000/mcp`): 7 tools, get_datetime/vassago/project_map/amon_lights OK contra backend vivo
+- **Cliente conectado:** Claude Desktop vía `mcp-remote` (config en caja MSIX). ⚠ cada redeploy bota la sesión MCP → reconectar.
+- **Fix amon_lights (bbea13f):** off/on/color/brillo hacen `/amon/stop` antes (escena activa pisaba el comando); `scene` usa `/amon/scene {name}`; nueva action `stop`.
+- **Fix deploy (6139a4d):** deps en `requirements.txt` (no solo pyproject), regenerar con `uv pip compile --python-platform linux` (sin pywin32).
+- **Pendiente validar con backend vivo:** decarabia_analyze, anima_generate, frigate_cam
 - Decisión: `decarabia_analyze` usa gemma4 por Ollama directo (no workflow ComfyUI) por robustez
+- **Próximo (plan Jarvis):** dar las 7 manos a Argos como tools LangGraph (reutilizar código) → dashboard/app las heredan; voz en app; tools que reporten estado real para respuestas humanas
 
 ---
 

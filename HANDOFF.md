@@ -20,6 +20,7 @@ externos (Claude Desktop, ollmcp+Qwen, Flutter). Capa separada de `ARGOS_TOOLS`.
 - **Fix deploy (6139a4d):** deps en `requirements.txt` (no solo pyproject), regenerar con `uv pip compile --python-platform linux` (sin pywin32).
 - **Pendiente validar con backend vivo:** decarabia_analyze, anima_generate, frigate_cam
 - Decisión: `decarabia_analyze` usa gemma4 por Ollama directo (no workflow ComfyUI) por robustez
+- **Tuning de modelos (VRAM 32GB):** resumen de contenido (`_Asmodeus/.env` `OLLAMA_MODEL`) → `gemma4:26b` (qwen3-coder-next 53GB desbordaba a CPU = lentísimo). Modelo AGENT probado con `qwen3.6:35b` (cabe en GPU) pero **falla tool-calling** → revertido a `qwen3-coder-next` (único llamador de tools confiable, lento en agent-mode). Sin probar: `qwen3.5:9b`. Ver [[feedback_vram_ceiling_models]].
 - **Próximo (plan Jarvis):** dar las 7 manos a Argos como tools LangGraph (reutilizar código) → dashboard/app las heredan; voz en app; tools que reporten estado real para respuestas humanas
 
 ---

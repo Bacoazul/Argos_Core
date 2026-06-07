@@ -1,5 +1,38 @@
 # SESSIONS — Argos Core
 
+## 2026-06-07
+
+### Implementado
+- **Validadas las 3 tools MCP pendientes** contra backend vivo: `decarabia_analyze` (gemma4), `anima_generate` (wake ComfyUI), `frigate_cam` (list+snapshot).
+- **Plan Jarvis Fase A**: el agente LangGraph hereda las 7 manos MCP. Adaptador único `core/mcp_langchain_adapter.py` (FunctionTool→StructuredTool, DRY). `ARGOS_TOOLS` 7→14; `prompts.py` describe las manos; `agent.py` suma keywords de router (luz/cámara/foto/imagen).
+- **Migración del path AGENT a llama-server (Qwen3.6-35B-A3B, GGUF Unsloth UD-Q4_K_M)**: ~180 tok/s, tool-calling confiable (single+parallel) vs qwen3-coder-next que desbordaba VRAM. `config.py` `agent_backend` (ollama|openai); `agent.py` `_build_agent_llm()` → `ChatOpenAI` con `extra_body chat_template_kwargs enable_thinking=false`. dep `langchain-openai`. Query prod end-to-end ~2s.
+- **Convivencia VRAM resuelta con `llama-swap`** (`C:\tools\llama-swap\`): carga el agente on-demand, descarga tras TTL 600s → libera ~24.5GB para visión gemma4. Verificado 24973→3413 MiB. Autostart `Startup\startup-jarvis.vbs`.
+- **Fix bug luces**: `/amon/control` (bridge) detiene el runner antes de aplicar comando manual → escena→color/brillo ya no se pisa. Cubre dashboard/app/Telegram/MCP.
+- **Docs**: CLAUDE.md (raíz), Project Map (Argos_Core.md), sección ayuda del dashboard (arquitectura). Memorias actualizadas.
+
+### Pendiente
+- **Reboot test** (autostart de llama-swap al login) — diferido por Chucho.
+- **Router**: agregar keywords `plano`/`planos` — queries vassago en lenguaje natural caen a CHAT (0.8b) y alucinan sin llamar la tool.
+- Solapamiento agente+visión en la MISMA query → gemma4 va a CPU (lento, no crashea); escalar a "stack llama-swap completo" solo si molesta.
+- Plan Jarvis: Fase B (estado human-readable, ya emergente con qwen3.6) + voz en app Flutter.
+- **Rotar secretos** (GITHUB_TOKEN, PAT GitHub, `.env` en Project_Map/raw) — pendiente de antes.
+
+### Decisiones técnicas
+- Agente en llama.cpp/llama-swap, NO Ollama (qwen3-coder-next 79B desbordaba 32GB→CPU). Backend conmutable en `model_config.json` (rollback fácil a ollama).
+- Reusar el GGUF de Ollama fue imposible (variante visión `qwen35moe` incompatible con llama.cpp estándar) → GGUF texto de Unsloth.
+- `llama-swap` (TTL) elegido sobre encoger a IQ3 o migrar todo a llama.cpp: libera VRAM al ecosistema cuando el agente está idle, sin perder calidad.
+- Fix de luces en el bridge (no en cada cliente) → una sola corrección cubre todos los frontends.
+- El fallo de tool-calling de qwen3.6 era del motor/template de Ollama, no del modelo (funciona con llama-server `--jinja`).
+
+### Problemas
+- **Deploy no se disparaba**: pushear `Argos_Core` NO despliega; el workflow `Deploy Asmodeus` vive en el repo **Asmodeus** y dispara con push ahí o `gh workflow run`. Corregido.
+- Scheduled Task sin admin (Access Denied) → solución user-space, luego reemplazada por llama-swap.
+- PS5.1 rompe `.ps1` con UTF-8 sin BOM (acentos/em-dash) → solo ASCII.
+- `llama-swap` usa flags estilo Go (un guion): `-config`/`-listen`.
+- `chat_template_kwargs` va en `extra_body`, no `model_kwargs`, para `ChatOpenAI`.
+
+---
+
 ## 2026-06-06
 
 ### Implementado

@@ -1,5 +1,5 @@
 # HANDOFF — Argos Core
-> Última actualización: 2026-06-06
+> Última actualización: 2026-06-07
 > Pegar en Claude Web o Cowork para continuar con contexto completo.
 
 ---

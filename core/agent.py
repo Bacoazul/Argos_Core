@@ -131,16 +131,41 @@ class ArgosAgent:
         )
 
         # ── Agent path: pesado, con tools ───────────────────────────────────
-        llm_agent = ChatOllama(
+        # Backend configurable: "openai" (llama-server, rápido, tool-calling fix)
+        # o "ollama" (qwen3-coder-next, default histórico). CHAT y visión siempre Ollama.
+        llm_agent = self._build_agent_llm(agent_model, ollama_url)
+        self.llm_with_tools = llm_agent.bind_tools(ARGOS_TOOLS)
+        self.app = self._build_brain(memory)
+        logger.info("Agent brain compiled.")
+
+    def _build_agent_llm(self, agent_model: str, ollama_url: str):
+        """Construye el LLM del path AGENT según `agent_backend`.
+
+        openai → llama-server (qwen3.6-35B-A3B): tool-calling confiable + ~180 tok/s,
+                 thinking OFF vía chat_template_kwargs. api_key dummy (llama-server lo ignora).
+        ollama → ChatOllama histórico (fallback seguro).
+        """
+        if self._cfg.agent_backend == "openai":
+            from langchain_openai import ChatOpenAI
+
+            logger.info("Agent backend: openai (llama-server) @ %s", self._cfg.agent_base_url)
+            return ChatOpenAI(
+                model=agent_model,
+                base_url=self._cfg.agent_base_url,
+                api_key="sk-local",  # llama-server ignora la key
+                temperature=0.1,
+                timeout=180,
+                extra_body={"chat_template_kwargs": {"enable_thinking": False}},
+            )
+
+        logger.info("Agent backend: ollama @ %s", ollama_url)
+        return ChatOllama(
             model=agent_model,
             base_url=ollama_url,
             temperature=0.1,
             num_ctx=8192,
             keep_alive=300,  # 5 min — libera VRAM si no hay queries AGENT activas
         )
-        self.llm_with_tools = llm_agent.bind_tools(ARGOS_TOOLS)
-        self.app = self._build_brain(memory)
-        logger.info("Agent brain compiled.")
 
     @staticmethod
     def db_path() -> Path:

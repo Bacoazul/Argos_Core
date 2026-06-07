@@ -23,12 +23,20 @@ _CONFIG_PATH = Path(os.getenv("MODEL_CONFIG_PATH", "/projects/argos_core/model_c
 
 @dataclass(frozen=True)
 class ModelConfig:
-    """Rol → modelo Ollama. Inmutable."""
+    """Rol → modelo. Inmutable.
+
+    `agent_backend` decide el runtime del path AGENT:
+      - "ollama"  → ChatOllama contra `ollama_base_url` (default histórico).
+      - "openai"  → ChatOpenAI contra `agent_base_url` (llama-server, API OpenAI).
+    El path CHAT y la visión siguen SIEMPRE en Ollama.
+    """
     agent: str
     chat: str
     vision: str
     embed: str
     ollama_base_url: str
+    agent_backend: str
+    agent_base_url: str
 
 
 def _from_env() -> dict:
@@ -39,6 +47,9 @@ def _from_env() -> dict:
         "vision": os.getenv("OLLAMA_VISION_MODEL", "gemma4:26b"),
         "embed": os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text"),
         "ollama_base_url": os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434"),
+        # Backend del agente: "ollama" (seguro) | "openai" (llama-server).
+        "agent_backend": os.getenv("AGENT_BACKEND", "ollama"),
+        "agent_base_url": os.getenv("AGENT_BASE_URL", "http://host.docker.internal:8090/v1"),
     }
 
 

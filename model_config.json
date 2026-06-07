@@ -1,7 +1,9 @@
 {
-  "agent": "qwen3-coder-next:latest",
+  "agent": "qwen3.6-35b-a3b",
   "chat": "qwen3.5:0.8b",
   "vision": "gemma4:26b",
   "embed": "nomic-embed-text",
-  "ollama_base_url": "http://host.docker.internal:11434"
+  "ollama_base_url": "http://host.docker.internal:11434",
+  "agent_backend": "openai",
+  "agent_base_url": "http://host.docker.internal:8090/v1"
 }

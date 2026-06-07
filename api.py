@@ -13,7 +13,11 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
+from fastmcp.utilities.lifespan import combine_lifespans
+
 from core.agent import ArgosAgent
+from core.config import load_model_config
+from core.mcp_server import mcp
 from utils.logger_config import get_argos_logger
 
 logger = get_argos_logger()
@@ -43,8 +47,9 @@ async def _warmup_knowledge() -> None:
 
 
 async def _warmup_chat_model() -> None:
-    chat_model = os.getenv("OLLAMA_CHAT_MODEL", "qwen3:1.7b")
-    ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    cfg = load_model_config()
+    chat_model = cfg.chat
+    ollama_url = cfg.ollama_base_url
     try:
         async with httpx.AsyncClient(timeout=60.0) as c:
             await c.post(
@@ -73,7 +78,18 @@ async def lifespan(app: FastAPI):
     _agent = None
 
 
-app = FastAPI(title="Argos Core API", lifespan=lifespan)
+# MCP server montado como sub-app ASGI (streamable-http).
+# path="/" interno + mount en "/mcp" → endpoint público POST /mcp, sin tapar
+# las rutas REST existentes (/chat, /health, /knowledge/query).
+# combine_lifespans corre el lifespan de Argos (AsyncSqliteSaver) Y el del
+# session manager de FastMCP — sin este último el MCP no inicializa.
+mcp_app = mcp.http_app(path="/", transport="streamable-http")
+
+app = FastAPI(
+    title="Argos Core API",
+    lifespan=combine_lifespans(lifespan, mcp_app.lifespan),
+)
+app.mount("/mcp", mcp_app)
 
 
 class ChatRequest(BaseModel):
@@ -111,5 +127,5 @@ async def knowledge_query(q: str, n: int = 6) -> dict:
 def health() -> dict:
     return {
         "status": "ok",
-        "model": os.getenv("OLLAMA_MODEL", "qwen3-coder-next:latest"),
+        "model": load_model_config().agent,
     }

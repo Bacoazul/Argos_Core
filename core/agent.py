@@ -20,6 +20,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage, BaseMessage
 
+from core.config import load_model_config
 from core.prompts import get_system_prompt, get_chat_prompt
 from core.tools import ARGOS_TOOLS
 from utils.logger_config import get_argos_logger
@@ -59,7 +60,7 @@ _AGENT_KEYWORDS = (
     "encargado", "responsable", "subagente",
     "estado actual", "actualmente", "pendiente", "fase",
     "bug", "falla", "error actual",
-    "circlevision", "asmodeus_app", "asmodeus app", "app móvil", "app movil",
+    "orobas", "asmodeus_app", "asmodeus app", "app móvil", "app movil",
     "pixel 9", "la app", "el app",
     "vigilanc", "amon", "baael", "vassago", "furfur", "malphas",
     "industrial index", "r-66", "papier",
@@ -106,9 +107,10 @@ class ArgosAgent:
     def __init__(self, memory: AsyncSqliteSaver) -> None:
         logger.info("Initializing Argos Agent (dual-path router)...")
 
-        ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        agent_model = os.getenv("OLLAMA_MODEL", "qwen3-coder-next:latest")
-        chat_model = os.getenv("OLLAMA_CHAT_MODEL", "qwen3:1.7b")
+        self._cfg = load_model_config()
+        ollama_url = self._cfg.ollama_base_url
+        agent_model = self._cfg.agent
+        chat_model = self._cfg.chat
 
         logger.info(f"Agent model: {agent_model} | Chat model: {chat_model}")
 
@@ -128,7 +130,7 @@ class ArgosAgent:
             base_url=ollama_url,
             temperature=0.1,
             num_ctx=8192,
-            keep_alive=-1,
+            keep_alive=300,  # 5 min — libera VRAM si no hay queries AGENT activas
         )
         self.llm_with_tools = llm_agent.bind_tools(ARGOS_TOOLS)
         self.app = self._build_brain(memory)
@@ -164,16 +166,16 @@ class ArgosAgent:
         if _is_agent_query(user_input):
             logger.info(f"[AGENT path] thread={thread_id}")
             response = await self._run_agent(stamped_input, thread_id)
-            return response, os.getenv("OLLAMA_MODEL", "qwen3-coder-next:latest")
+            return response, self._cfg.agent
         else:
             logger.info(f"[CHAT path] thread={thread_id}")
             response = await self._run_chat(stamped_input)
-            return response, os.getenv("OLLAMA_CHAT_MODEL", "qwen3:1.7b")
+            return response, self._cfg.chat
 
     async def _run_chat(self, stamped_input: str) -> str:
         """Path rápido: httpx directo a Ollama con think=False para evitar reasoning loops."""
-        ollama_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        chat_model = os.getenv("OLLAMA_CHAT_MODEL", "qwen3.5:0.8b")
+        ollama_url = self._cfg.ollama_base_url
+        chat_model = self._cfg.chat
         async with httpx.AsyncClient(timeout=60.0) as client:
             r = await client.post(
                 f"{ollama_url}/api/chat",

@@ -38,9 +38,19 @@ def get_datetime() -> dict[str, Any]:
     }
 
 
+def _stop_runner() -> None:
+    """Detiene cualquier escena/sync activo. Idempotente — ok aunque no haya nada.
+
+    Crítico: una escena (pulso, amanecer, screen-sync, tormenta...) reenvía
+    comandos a los bombillos en bucle y PISA cualquier comando manual (off,
+    color, brillo). Hay que pararla antes de un control manual o no 'pega'.
+    """
+    bridge_post("/amon/stop", {})
+
+
 @mcp.tool
 def amon_lights(
-    action: Literal["on", "off", "brightness", "color", "scene", "status"],
+    action: Literal["on", "off", "brightness", "color", "scene", "stop", "status"],
     value: str | int | None = None,
     device_id: str = "all",
 ) -> dict[str, Any]:
@@ -53,7 +63,11 @@ def amon_lights(
       - "brightness"   : value = entero 1-100 (porcentaje)
       - "color"        : value = nombre o hex del color (ej "rojo", "#00ff00")
       - "scene"        : value = escena ("amanecer", "atardecer", "pulso", "tormenta")
+      - "stop"         : detiene la escena/sync activo, deja las luces como están
       - "status"       : estado actual de cada bombillo (value ignorado)
+
+    Nota: on/off/brightness/color detienen primero cualquier escena activa, si no
+    la escena pisaría el comando y no surtiría efecto.
 
     device_id: "all" (default), o el id de un bombillo concreto.
     Devuelve {"ok": bool, ...}.
@@ -61,10 +75,15 @@ def amon_lights(
     if action == "status":
         return bridge_get("/amon/status")
 
+    if action == "stop":
+        return bridge_post("/amon/stop", {})
+
     if action == "on":
+        _stop_runner()
         return bridge_post("/amon/control", {"action": "turn_on", "device_id": device_id})
 
     if action == "off":
+        _stop_runner()
         return bridge_post("/amon/control", {"action": "turn_off", "device_id": device_id})
 
     if action == "brightness":
@@ -72,19 +91,23 @@ def amon_lights(
             pct = max(1, min(100, int(value)))  # type: ignore[arg-type]
         except (TypeError, ValueError):
             return {"ok": False, "error": "brightness requiere un entero 1-100 en 'value'"}
+        _stop_runner()
         return bridge_post("/amon/control", {"action": "brightness", "device_id": device_id, "value": pct})
 
     if action == "color":
         if not value or not isinstance(value, str):
             return {"ok": False, "error": "color requiere el nombre/hex en 'value'"}
+        _stop_runner()
         return bridge_post("/amon/control", {"action": "color", "device_id": device_id, "color": value.lower()})
 
     if action == "scene":
         if not value or not isinstance(value, str):
             return {"ok": False, "error": "scene requiere el nombre de la escena en 'value'"}
         scene = value.lower()
+        # tormenta tiene su propio endpoint; las demás (amanecer/atardecer/pulso)
+        # son escenas animadas del runner via /amon/scene {name}.
         if scene == "tormenta":
             return bridge_post("/amon/tormenta", {})
-        return bridge_post("/amon/control", {"action": "mode", "device_id": "all", "mode": scene})
+        return bridge_post("/amon/scene", {"name": scene})
 
     return {"ok": False, "error": f"acción no reconocida: {action}"}

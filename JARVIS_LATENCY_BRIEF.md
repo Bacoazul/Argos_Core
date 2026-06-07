@@ -85,13 +85,15 @@ llama-server.exe -m models\Qwen3.6-35B-A3B-UD-Q4_K_M.gguf -ngl 99 -c 8192 \
 - **Test end-to-end real:** ArgosAgent (backend openai) → llama-server → frigate_cam → tabla markdown, **2.2s**.
 - Rollback: poner `agent_backend:"ollama"` en model_config.json + recrear contenedor.
 
-### ✅ Auto-start RESUELTO (2026-06-07)
-llama-server se mantiene vivo SIN admin (Scheduled Task daba Access Denied):
-- **Supervisor** `C:\tools\llamacpp\jarvis-supervisor.ps1` — loop que arranca llama-server y lo reinicia si crashea (logs: `jarvis-supervisor.log`, `jarvis-stdout/stderr.log`). **Solo ASCII** (PS5.1 rompe con acentos/em-dash en UTF-8 sin BOM).
-- **Autostart al login:** `...\Startup\startup-jarvis.vbs` lanza el supervisor oculto en cada inicio de sesión.
-- Verificado: query AGENT producción vía `:8000` con get_datetime+frigate_cam en 2.2s.
+### ✅ Convivencia VRAM + auto-start RESUELTOS con llama-swap (2026-06-07)
+El supervisor casero quedó **obsoleto** (borrados `jarvis-supervisor.ps1` y `start-jarvis.ps1`). Ahora **`llama-swap`** (Go, v223, `C:\tools\llama-swap\`) gestiona el modelo agente:
+- **On-demand + TTL:** carga llama-server al primer request y lo **descarga tras 600s idle**, liberando los ~24.5GB para Ollama (visión gemma4 / chat / embed) cuando el agente está idle (el 99% del tiempo). Verificado: VRAM 24973→3413 MiB sola tras TTL.
+- **Drop-in:** endpoint OpenAI en `:8090` (Argos sigue apuntando ahí, sin cambios). Config: `C:\tools\llama-swap\config.yaml` (modelo `qwen3.6-35b-a3b` → cmd llama-server con `${PORT}`, `ttl: 600`).
+- **Auto-start:** `...\Startup\startup-jarvis.vbs` lanza llama-swap oculto al login.
+- **Flags Go (un guion):** `-config`, `-listen :8090`.
+- Cold start tras idle ≈ 15s (precio de liberar VRAM); caliente ~1.5-2s.
+- Verificado prod `:8000`: cold-load + tool-calling OK.
 
-### 🔴 PENDIENTE — convivencia VRAM (único abierto)
-llama-server persistente acapara 24.5GB → si una query AGENT llama `decarabia_analyze` (gemma4:26b, ~16GB) **no cabe** (24.5+16>32) y la visión fallará/irá a CPU. Falta orquestación **on-demand** (parar llama-server antes de visión / patrón go2rtc vía Windows Bridge).
+**Solapamiento agente+visión puntual** (query AGENT que llama `decarabia_analyze` mientras el agente está cargado): gemma4 entra con offload a CPU (lento esa vez, no crashea). Si molesta → escalar a "stack llama-swap completo" (mover visión/chat también a llama.cpp bajo un único árbitro LRU).
 
 *Contexto: Plan Jarvis Fase A (agente LangGraph con 14 tools) ya desplegado; la latencia del modelo agente era el único cuello — ahora resuelta a nivel de runtime, falta integrar.*

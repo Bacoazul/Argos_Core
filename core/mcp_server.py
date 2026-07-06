@@ -19,3 +19,4 @@ from core import mcp_projectmap  # noqa: E402,F401  project_map
 from core import mcp_vision      # noqa: E402,F401  decarabia_analyze
 from core import mcp_comfyui     # noqa: E402,F401  anima_generate
 from core import mcp_frigate     # noqa: E402,F401  frigate_cam
+from core import mcp_andras     # noqa: E402,F401  andras_train

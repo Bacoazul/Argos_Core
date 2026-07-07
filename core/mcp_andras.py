@@ -1,8 +1,8 @@
 """
-MCP tool: andras_train — lanza entrenamiento de LoRA en Andras via UI Gradio.
+MCP tool: andras_train — lanza entrenamiento de LoRA en Andras via UI Next.js.
 
 Andras es el wrapper de entrenamiento de LoRAs para Krea 2 basado en
-ai-toolkit (ostris). La UI Gradio corre en :7866; si está apagada se
+ai-toolkit (ostris). La UI Next.js corre en :8675; si está apagada se
 despierta vía Windows Bridge.
 
 El config lo provee el cliente MCP. Campos típicos:
@@ -10,7 +10,7 @@ El config lo provee el cliente MCP. Campos típicos:
   - output_name: nombre del LoRA de salida (sin extensión)
   - steps: pasos de entrenamiento (default 1000)
   - model: modelo base (default "krea2")
-Consultar la UI en :7866 para el schema exacto una vez instalada.
+Consultar la UI en :8675 para el schema exacto una vez instalada.
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from utils.logger_config import get_argos_logger
 
 logger = get_argos_logger()
 
-ANDRAS_UI_URL = "http://host.docker.internal:7866"
+ANDRAS_UI_URL = "http://host.docker.internal:8675"
 _WAKE_TIMEOUT = 60.0
 _WAKE_INTERVAL = 5.0
 
@@ -70,15 +70,12 @@ def andras_train(
     Lanza entrenamiento de LoRA en Andras (ai-toolkit local, RTX 5090). Sin nube.
 
     - config: configuración del entrenamiento. Campos típicos:
-        - dataset_path: ruta al dataset (imágenes + captions)
-        - output_name: nombre del LoRA de salida (sin extensión)
-        - steps: pasos de entrenamiento (default 1000)
-        - model: modelo base (default "krea2")
-      Consultar la UI en :7866 para el schema exacto de configuración.
+        - name: nombre del job (requerido)
+        - job_config: config YAML del trainer (dataset_path, output_name, steps, model...)
+        - gpu_ids: IDs de GPU (default "0")
+      Consultar la UI en :8675 para el schema exacto de configuración.
 
-    Despierta la Andras UI si está apagada. Intenta enviar el config a
-    /api/train; si el endpoint aún no existe (UI en construcción), devuelve
-    la URL de la UI para interacción manual.
+    Despierta la Andras UI si está apagada. Envía el job a /api/jobs.
     """
     if not isinstance(config, dict):
         return {"ok": False, "error": "config debe ser un dict"}
@@ -88,27 +85,23 @@ def andras_train(
         if err:
             return {"ok": False, "error": err}
 
-    payload = json.dumps({"config": config}).encode()
+    payload = json.dumps({
+        "name": config.get("name", "andras-lora-job"),
+        "job_config": config.get("job_config", config),
+        "gpu_ids": config.get("gpu_ids", "0"),
+    }).encode()
     req = urllib.request.Request(
-        f"{ANDRAS_UI_URL}/api/train",
+        f"{ANDRAS_UI_URL}/api/jobs",
         data=payload,
         headers={"Content-Type": "application/json"},
     )
     try:
         with urllib.request.urlopen(req, timeout=15.0) as r:
             result = json.loads(r.read())
-        logger.info("Andras train iniciado: %s", config.get("output_name", "?"))
+        logger.info("Andras job creado: %s", config.get("name", "?"))
         return {"ok": True, **result}
     except urllib.error.HTTPError as e:
-        if e.code == 404:
-            logger.info("Andras UI activa pero /api/train pendiente de implementar")
-            return {
-                "ok": True,
-                "status": "ui_ready",
-                "ui_url": ANDRAS_UI_URL,
-                "note": "/api/train no implementado aún — usar la UI directamente en :7866",
-            }
-        return {"ok": False, "error": f"Andras /api/train respondió {e.code}: {e}"}
+        return {"ok": False, "error": f"Andras /api/jobs respondió {e.code}: {e}"}
     except Exception as e:
         logger.error("Andras train error: %s", e)
         return {

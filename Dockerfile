@@ -8,9 +8,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Instalar git
+# Instalar git y ffmpeg (yt-dlp lo necesita para extraer audio)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar requirements e instalar

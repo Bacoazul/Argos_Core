@@ -20,3 +20,4 @@ from core import mcp_vision      # noqa: E402,F401  decarabia_analyze
 from core import mcp_comfyui     # noqa: E402,F401  anima_generate
 from core import mcp_frigate     # noqa: E402,F401  frigate_cam
 from core import mcp_andras     # noqa: E402,F401  andras_train
+from core import mcp_baael      # noqa: E402,F401  baael_transcribe

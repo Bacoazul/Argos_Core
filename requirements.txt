@@ -360,5 +360,7 @@ xxhash==3.6.0
     # via
     #   langgraph
     #   langsmith
+yt-dlp==2026.8.19
+    # via argos-core (pyproject.toml)
 zstandard==0.25.0
     # via langsmith

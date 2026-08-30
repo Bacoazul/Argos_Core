@@ -21,4 +21,5 @@ dependencies = [
     "aiosqlite>=0.20.0",
     "fastmcp>=2.11.0",
     "duckdb>=1.1.0",
+    "yt-dlp>=2025.1.15",
 ]

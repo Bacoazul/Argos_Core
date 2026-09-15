@@ -21,3 +21,4 @@ from core import mcp_comfyui     # noqa: E402,F401  anima_generate
 from core import mcp_frigate     # noqa: E402,F401  frigate_cam
 from core import mcp_andras     # noqa: E402,F401  andras_train
 from core import mcp_baael      # noqa: E402,F401  baael_transcribe
+from core import mcp_dantalion_omni  # noqa: E402,F401  dantalion_analyze_video

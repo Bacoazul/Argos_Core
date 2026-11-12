@@ -22,3 +22,4 @@ from core import mcp_frigate     # noqa: E402,F401  frigate_cam
 from core import mcp_andras     # noqa: E402,F401  andras_train
 from core import mcp_baael      # noqa: E402,F401  baael_transcribe
 from core import mcp_dantalion_omni  # noqa: E402,F401  dantalion_analyze_video
+from core import mcp_barbatos    # noqa: E402,F401  fh_status/fh_snapshot/fh_events/fh_screenshot/fh_send
